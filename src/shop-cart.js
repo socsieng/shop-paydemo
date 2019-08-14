@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import './shop-button.js';
+import './shop-checkout.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
@@ -14,20 +14,15 @@ class ShopCart extends PolymerElement {
 
       .checkout-box {
         font-weight: bold;
-        text-align: right;
-        margin-right: 10px;
+        text-align: center;
       }
 
       .subtotal {
-        margin: 0 64px 0 24px;
+        margin: 0 0 0 24px;
       }
 
-      @media (max-width: 767px) {
-
-        .subtotal {
-          margin: 0 0 0 24px;
-        }
-
+      shop-checkout {
+        margin-top: 30px;
       }
 
     </style>
@@ -50,11 +45,9 @@ class ShopCart extends PolymerElement {
         </div>
         <div class="checkout-box">
           Total: <span class="subtotal">[[_formatTotal(total)]]</span>
-          <shop-button responsive>
-            <a href="/checkout">Checkout</a>
-          </shop-button>
         </div>
       </div>
+      <shop-checkout cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
     </div>
     `;
   }

@@ -358,6 +358,7 @@ class ShopApp extends PolymerElement {
     // listen for custom events
     this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
     this.addEventListener('buy-item', (e)=>this._onBuyItemWithGoogle(e));
+    this.addEventListener('buy-cart', (e)=>this._onBuyCartWithGoogle(e));
     this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     this.addEventListener('change-section', (e)=>this._onChangeSection(e));
@@ -512,11 +513,26 @@ class ShopApp extends PolymerElement {
 
   _onBuyItemWithGoogle(event) {
     const displayItems = this._getDisplayItemsFromItem(event.detail);
-    const total = displayItems.reduce((sum, item) => {
+    this._requestPayment(displayItems)
+      .then(instrument => {
+        return this._processPayment(instrument, false);
+      });
+  }
+
+  _onBuyCartWithGoogle(event) {
+    const displayItems = this._getDisplayItemsFromCart(event.detail);
+    this._requestPayment(displayItems)
+      .then(instrument => {
+        return this._processPayment(instrument, true);
+      });
+  }
+
+  _requestPayment(items) {
+    const total = items.reduce((sum, item) => {
       return sum + parseFloat(item.amount.value);
     }, 0);
 
-    GPay.client.loadPaymentData({
+    return GPay.client.loadPaymentData({
       ...GPay.gPayBaseRequest,
       transactionInfo: {
         totalPriceStatus: 'FINAL',
@@ -525,9 +541,7 @@ class ShopApp extends PolymerElement {
         currencyCode: 'USD',
       },
     })
-    .then(instrument => {
-      return this._processPayment(instrument, false);
-    }).catch(err => {
+    .catch(err => {
       // this.payment.preload();
       if (err.statusCode === 'DEVELOPER_ERROR') {
         console.error('There\'s a configuration error');
@@ -561,7 +575,7 @@ class ShopApp extends PolymerElement {
 
       // Proceed to sign-in if the user is not signed up
       this.userEmail = instrumentResponse.payerEmail;
-      // this.set('route.path', '/account/signup');
+      this.set('route.path', '/');
     }, 500);
   }
 
@@ -632,6 +646,18 @@ class ShopApp extends PolymerElement {
       label: `${detail.item.title} ${detail.size} x ${detail.quantity}`,
       amount: {currency: 'USD', value: itemCost.toFixed(2)}
     }];
+    return displayItems;
+  }
+
+  _getDisplayItemsFromCart() {
+    let displayItems = [];
+    for (let entry of this.cart) {
+      let itemCost = entry.quantity * entry.item.price;
+      displayItems.push({
+        label: `${entry.item.title} ${entry.size} x ${entry.quantity}`,
+        amount: {currency: 'USD', value: itemCost.toFixed(2)}
+      });
+    }
     return displayItems;
   }
 }

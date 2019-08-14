@@ -2,6 +2,7 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-button.js';
+import './shop-buy-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 import './shop-input.js';
@@ -91,6 +92,14 @@ class ShopCheckout extends PolymerElement {
         margin: 30px 0;
       }
 
+      .buy-buttons {
+        width: 80%;
+        max-width: 400px;
+        margin: 10px auto 20px;
+        padding: 20px;
+        border-bottom: 1px solid #ccc;
+      }
+
       @media (max-width: 767px) {
 
         .grid {
@@ -109,6 +118,9 @@ class ShopCheckout extends PolymerElement {
     <div class="main-frame">
       <iron-pages id="pages" selected="[[state]]" attr-for-selected="state">
         <div state="init">
+          <div class="buy-buttons">
+            <shop-buy-button on-buy="[[_buyCart]]" />
+          </div>
           <iron-form id="checkoutForm"
               on-iron-form-response="_didReceiveResponse"
               on-iron-form-presubmit="_willSendRequest">
@@ -129,7 +141,7 @@ class ShopCheckout extends PolymerElement {
                   <div class="row input-row">
                     <shop-input>
                       <input type="email" id="accountEmail" name="accountEmail"
-                          placeholder="Email" autofocus required
+                          placeholder="Email" required
                           aria-labelledby="accountEmailLabel accountInfoHeading">
                       <shop-md-decorator error-message="Invalid Email" aria-hidden="true">
                         <label id="accountEmailLabel">Email</label>
@@ -486,6 +498,11 @@ class ShopCheckout extends PolymerElement {
     '_updateState(routeActive, routeData)'
   ]}
 
+  constructor() {
+    super();
+    this._buyCart = this._buyCart.bind(this);
+  }
+
   _submit(e) {
     if (this._validateForm()) {
       // To send the form data to the server:
@@ -631,6 +648,13 @@ class ShopCheckout extends PolymerElement {
     } else {
       this._pushState('error');
     }
+  }
+
+  _buyCart() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-cart', {
+      bubbles: true, composed: true
+    }));
   }
 
   _toggleBillingAddress(e) {
