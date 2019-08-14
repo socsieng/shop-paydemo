@@ -14,6 +14,7 @@ import './shop-home.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import GPay from './gpay.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -356,6 +357,7 @@ class ShopApp extends PolymerElement {
     this.removeAttribute('unresolved');
     // listen for custom events
     this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
+    this.addEventListener('buy-item', (e)=>this._onBuyItemWithGoogle(e));
     this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     this.addEventListener('change-section', (e)=>this._onChangeSection(e));
@@ -508,6 +510,61 @@ class ShopApp extends PolymerElement {
     this._announce('Item added to the cart');
   }
 
+  _onBuyItemWithGoogle(event) {
+    const displayItems = this._getDisplayItemsFromItem(event.detail);
+    const total = displayItems.reduce((sum, item) => {
+      return sum + parseFloat(item.amount.value);
+    }, 0);
+
+    GPay.client.loadPaymentData({
+      ...GPay.gPayBaseRequest,
+      transactionInfo: {
+        totalPriceStatus: 'FINAL',
+        totalPriceLabel: 'Total',
+        totalPrice: total.toFixed(2),
+        currencyCode: 'USD',
+      },
+    })
+    .then(instrument => {
+      return this._processPayment(instrument, false);
+    }).catch(err => {
+      // this.payment.preload();
+      if (err.statusCode === 'DEVELOPER_ERROR') {
+        console.error('There\'s a configuration error');
+        // Do nothing
+      } else if (err.statusCode === 'CANCELED') {
+        this._announce('Payment cancelled.');
+      }
+    });
+  }
+
+  _processPayment(instrumentResponse, cartBuy) {
+    // This is normally where you'd send instrumentResponse to your backend
+    // or payment processor. For this demo we don't actually do that,
+    // instead mimicking a processing delay with a 2-second timout.
+    //
+    // See the PaymentRequest integration guide for a typical flow:
+    // https://developers.google.com/web/fundamentals/primers/payment-request/
+
+    window.setTimeout(() => {
+      if (instrumentResponse.complete) {
+        instrumentResponse.complete('success')
+      }
+
+      if (cartBuy) {
+        this.dispatchEvent(new CustomEvent('clear-cart', {
+          bubbles: true, composed: true
+        }));
+      }
+
+      alert('Congratulations, on your purchase has been processed (items have not actually been purchased)');
+
+      // Proceed to sign-in if the user is not signed up
+      this.userEmail = instrumentResponse.payerEmail;
+      // this.set('route.path', '/account/signup');
+    }, 500);
+  }
+
   _onSetCartItem(event) {
     let detail = event.detail;
     this.$.cart.setItem(detail);
@@ -567,6 +624,15 @@ class ShopApp extends PolymerElement {
 
   _computePluralizedQuantity(quantity) {
     return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+  }
+
+  _getDisplayItemsFromItem(detail) {
+    let itemCost = detail.quantity * detail.item.price;
+    let displayItems = [{
+      label: `${detail.item.title} ${detail.size} x ${detail.quantity}`,
+      amount: {currency: 'USD', value: itemCost.toFixed(2)}
+    }];
+    return displayItems;
   }
 }
 

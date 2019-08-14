@@ -1,6 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import './shop-buy-button.js';
 import './shop-button.js';
 import './shop-category-data.js';
 import './shop-common-styles.js';
@@ -81,6 +82,16 @@ class ShopDetail extends PolymerElement {
       .pickers {
         @apply --layout-vertical;
         border-top: 1px solid #ccc;
+      }
+
+      .buttons {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .buttons > * {
+        margin-top: 4px;
+        width: 100%;
       }
 
       shop-select > select {
@@ -177,9 +188,12 @@ class ShopDetail extends PolymerElement {
           <h2>Description</h2>
           <p id="desc"></p>
         </div>
-        <shop-button responsive>
-          <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
-        </shop-button>
+        <div class="buttons">
+          <shop-button responsive>
+            <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
+          </shop-button>
+          <shop-buy-button on-buy="[[_buyItem]]" />
+        </div>
       </div>
     </div>
 
@@ -223,6 +237,11 @@ class ShopDetail extends PolymerElement {
     '_itemChanged(item, visible)'
   ]}
 
+  constructor() {
+    super();
+    this._buyItem = this._buyItem.bind(this);
+  }
+
   _itemChanged(item, visible) {
     if (visible) {
       this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
@@ -257,9 +276,24 @@ class ShopDetail extends PolymerElement {
     return price ? '$' + price.toFixed(2) : '';
   }
 
+  _totalAmount(price) {
+    console.log(price, parseInt(this.$.quantitySelect.value, 10));
+    return price * parseInt(this.$.quantitySelect.value, 10);
+  }
+
   _addToCart() {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('add-cart-item', {
+      bubbles: true, composed: true, detail: {
+        item: this.item,
+        quantity: parseInt(this.$.quantitySelect.value, 10),
+        size: this.$.sizeSelect.value
+      }}));
+  }
+
+  _buyItem() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-item', {
       bubbles: true, composed: true, detail: {
         item: this.item,
         quantity: parseInt(this.$.quantitySelect.value, 10),

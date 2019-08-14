@@ -25,6 +25,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-button">
         border-radius: 0;
         outline: none;
         -webkit-appearance: none;
+        width: 100%;
       }
 
       shop-button > *:focus {
