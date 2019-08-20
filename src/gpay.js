@@ -4,6 +4,12 @@ export default class GPay {
   static get clientConfiguration() {
     return {
       environment: 'TEST',
+      paymentDataCallbacks: {
+        onPaymentDataChanged: (data) => {
+          console.log('onPaymentDataChanged', data);
+          return Promise.resolve({});
+        },
+      },
     };
   }
 
@@ -33,8 +39,8 @@ export default class GPay {
       allowedPaymentMethods: [
         cardPaymentMethod,
       ],
-      shippingAddressRequired: false,
-      shippingOptionRequired: false,
+      shippingAddressRequired: true,
+      callbackIntents: ['SHIPPING_ADDRESS'],
     };
   }
 

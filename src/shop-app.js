@@ -573,9 +573,10 @@ class ShopApp extends PolymerElement {
 
       alert('Congratulations, on your purchase has been processed (items have not actually been purchased)');
 
-      // Proceed to sign-in if the user is not signed up
-      this.userEmail = instrumentResponse.payerEmail;
-      this.set('route.path', '/');
+      if (cartBuy) {
+        this.userEmail = instrumentResponse.payerEmail;
+        this.set('route.path', '/');
+      }
     }, 500);
   }
 
