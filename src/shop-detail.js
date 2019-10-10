@@ -189,7 +189,7 @@ class ShopDetail extends PolymerElement {
           <p id="desc"></p>
         </div>
         <div class="buttons">
-          <shop-button responsive>
+          <shop-button>
             <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
           </shop-button>
           <shop-buy-button on-buy="[[_buyItem]]" />

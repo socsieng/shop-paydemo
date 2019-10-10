@@ -1,15 +1,30 @@
 let _client;
 
+const shippingOptions = [
+  {
+    "id": "free",
+    "label": "Free shipping",
+    "detail": "Arrives in 5 to 7 days",
+    "price": 0.00
+  },
+  {
+    "id": "express",
+    "label": "Express shipping",
+    "detail": "Arrives in 1 to 3 days",
+    "price": 5.00
+  }
+];
+
 export default class GPay {
   static get clientConfiguration() {
     return {
-      environment: 'TEST',
-      paymentDataCallbacks: {
-        onPaymentDataChanged: (data) => {
-          console.log('onPaymentDataChanged', data);
-          return Promise.resolve({});
-        },
-      },
+      environment: 'PRODUCTION',
+      // paymentDataCallbacks: {
+      //   onPaymentDataChanged: (data) => {
+      //     console.log('onPaymentDataChanged', data);
+      //     return Promise.resolve({});
+      //   },
+      // },
     };
   }
 
@@ -23,8 +38,9 @@ export default class GPay {
       tokenizationSpecification: {
         type: 'PAYMENT_GATEWAY',
         parameters: {
-          'gateway': 'example',
-          'gatewayMerchantId': 'exampleGatewayMerchantId'
+          'gateway': 'stripe',
+          'stripe:version': '2018-10-31',
+          'stripe:publishableKey': 'pk_test_MNKMwKAvgdo2yKOhIeCOE6MZ00yS3mWShu',
         },
       },
     };
@@ -33,14 +49,15 @@ export default class GPay {
       apiVersion: 2,
       apiVersionMinor: 0,
       merchantInfo: {
-        merchantId: '1234567890',
+        merchantId: '17613812255336763067',
         merchantName: 'Demo Merchant',
       },
       allowedPaymentMethods: [
         cardPaymentMethod,
       ],
       shippingAddressRequired: true,
-      callbackIntents: ['SHIPPING_ADDRESS'],
+      // callbackIntents: ['SHIPPING_ADDRESS'], //, 'SHIPPING_OPTION'],
+      // shippingOptionRequired: true,
     };
   }
 

@@ -379,7 +379,7 @@ class ShopCheckout extends PolymerElement {
                     <div class="flex">Total</div>
                     <div>[[_formatPrice(total)]]</div>
                   </div>
-                  <shop-button responsive id="submitBox">
+                  <shop-button id="submitBox">
                     <input type="button" on-click="_submit" value="Place Order">
                   </shop-button>
                 </section>

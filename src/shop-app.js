@@ -201,6 +201,10 @@ class ShopApp extends PolymerElement {
         text-transform: uppercase;
       }
 
+      shop-detail, shop-cart, shop-checkout {
+        margin-top: -65px;
+      }
+
       /* small screen */
       @media (max-width: 767px) {
         :host {
@@ -213,6 +217,10 @@ class ShopApp extends PolymerElement {
 
         :host([page=detail]) .menu-btn {
           display: none;
+        }
+
+        shop-detail, shop-cart, shop-checkout {
+          margin-top: 0;
         }
       }
 
@@ -301,14 +309,18 @@ class ShopApp extends PolymerElement {
       <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
       <!-- checkout view -->
       <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
+      <!-- confirmation view -->
+      <shop-confirmation name="confirmation"></confirmation>
 
       <shop-404-warning name="404"></shop-404-warning>
     </iron-pages>
 
+    <!--
     <footer>
       <a href="https://www.polymer-project.org/3.0/toolbox/">Made by Polymer</a>
       <div class="demo-label">Demo Only</div>
     </footer>
+    -->
 
     <!-- a11y announcer -->
     <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
@@ -399,7 +411,10 @@ class ShopApp extends PolymerElement {
         case 'checkout':
           import('./shop-checkout.js').then(cb);
           break;
-        default:
+        case 'confirmation':
+          import('./shop-confirmation.js').then(cb);
+          break;
+          default:
           this._pageLoaded(Boolean(oldPage));
       }
     }
@@ -541,6 +556,10 @@ class ShopApp extends PolymerElement {
         currencyCode: 'USD',
       },
     })
+    .then(paymentResponse => {
+      console.log(paymentResponse);
+      return paymentResponse;
+    })
     .catch(err => {
       // this.payment.preload();
       if (err.statusCode === 'DEVELOPER_ERROR') {
@@ -571,12 +590,13 @@ class ShopApp extends PolymerElement {
         }));
       }
 
-      alert('Congratulations, on your purchase has been processed (items have not actually been purchased)');
+      this.set('route.path', '/confirmation');
+      // alert('Congratulations, on your purchase has been processed (items have not actually been purchased)');
 
-      if (cartBuy) {
-        this.userEmail = instrumentResponse.payerEmail;
-        this.set('route.path', '/');
-      }
+      // if (cartBuy) {
+      //   this.userEmail = instrumentResponse.payerEmail;
+      //   this.set('route.path', '/');
+      // }
     }, 500);
   }
 

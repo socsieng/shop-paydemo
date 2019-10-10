@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import './shop-checkout.js';
+import './shop-button.js';
+import './shop-buy-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
@@ -21,8 +22,16 @@ class ShopCart extends PolymerElement {
         margin: 0 0 0 24px;
       }
 
-      shop-checkout {
-        margin-top: 30px;
+      .buy-buttons {
+        width: 80%;
+        max-width: 400px;
+        margin: 40px auto 20px;
+        padding: 20px;
+      }
+
+      .buy-buttons > * {
+        margin-bottom: 4px;
+        display: block;
       }
 
     </style>
@@ -47,7 +56,13 @@ class ShopCart extends PolymerElement {
           Total: <span class="subtotal">[[_formatTotal(total)]]</span>
         </div>
       </div>
-      <shop-checkout cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
+
+      <div class="buy-buttons">
+        <shop-buy-button on-buy="[[_buyCart]]"></shop-buy-button>
+        <shop-button>
+          <a href="/checkout">Checkout</a>
+        </shop-button>
+      </div>
     </div>
     `;
   }
@@ -71,6 +86,11 @@ class ShopCart extends PolymerElement {
 
   }}
 
+  constructor() {
+    super();
+    this._buyCart = this._buyCart.bind(this);
+  }
+
   _formatTotal(total) {
     return isNaN(total) ? '' : '$' + total.toFixed(2);
   }
@@ -91,6 +111,12 @@ class ShopCart extends PolymerElement {
     }
   }
 
+  _buyCart() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-cart', {
+      bubbles: true, composed: true
+    }));
+  }
 }
 
 customElements.define(ShopCart.is, ShopCart);
