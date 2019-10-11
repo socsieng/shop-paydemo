@@ -30,10 +30,15 @@ class ShopBuyButton extends PolymerElement {
   }
 
   _initializeButton() {
-    GPay.client.isReadyToPay(GPay.gPayBaseRequest)
+    let gpayClient;
+    GPay.getClient()
+      .then(client => {
+        gpayClient = client;
+        return client.isReadyToPay(GPay.gPayBaseRequest);
+      })
       .then(response => {
         if (response.result) {
-          const button = GPay.client.createButton({
+          const button = gpayClient.createButton({
             onClick: () => {
               if (this.onBuy) {
                 this.onBuy();

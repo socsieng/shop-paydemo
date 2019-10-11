@@ -374,6 +374,7 @@ class ShopApp extends PolymerElement {
     this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     this.addEventListener('change-section', (e)=>this._onChangeSection(e));
+    this.addEventListener('confirmation', (e)=>this._onConfirmation(e));
     this.addEventListener('announce', (e)=>this._onAnnounce(e));
     this.addEventListener('dom-change', (e)=>this._domChange(e));
     this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
@@ -547,28 +548,29 @@ class ShopApp extends PolymerElement {
       return sum + parseFloat(item.amount.value);
     }, 0);
 
-    return GPay.client.loadPaymentData({
-      ...GPay.gPayBaseRequest,
-      transactionInfo: {
-        totalPriceStatus: 'FINAL',
-        totalPriceLabel: 'Total',
-        totalPrice: total.toFixed(2),
-        currencyCode: 'USD',
-      },
-    })
-    .then(paymentResponse => {
-      console.log(paymentResponse);
-      return paymentResponse;
-    })
-    .catch(err => {
-      // this.payment.preload();
-      if (err.statusCode === 'DEVELOPER_ERROR') {
-        console.error('There\'s a configuration error');
-        // Do nothing
-      } else if (err.statusCode === 'CANCELED') {
-        this._announce('Payment cancelled.');
-      }
-    });
+    return GPay.getClient()
+      .then(client => client.loadPaymentData({
+        ...GPay.gPayBaseRequest,
+        transactionInfo: {
+          totalPriceStatus: 'FINAL',
+          totalPriceLabel: 'Total',
+          totalPrice: total.toFixed(2),
+          currencyCode: 'USD',
+        },
+      }))
+      .then(paymentResponse => {
+        console.log(paymentResponse);
+        return paymentResponse;
+      })
+      .catch(err => {
+        // this.payment.preload();
+        if (err.statusCode === 'DEVELOPER_ERROR') {
+          console.error('There\'s a configuration error');
+          // Do nothing
+        } else if (err.statusCode === 'CANCELED') {
+          this._announce('Payment cancelled.');
+        }
+      });
   }
 
   _processPayment(instrumentResponse, cartBuy) {
@@ -590,7 +592,10 @@ class ShopApp extends PolymerElement {
         }));
       }
 
-      this.set('route.path', '/confirmation');
+      this.dispatchEvent(new CustomEvent('confirmation', {
+        bubbles: true, composed: true
+      }));
+
       // alert('Congratulations, on your purchase has been processed (items have not actually been purchased)');
 
       // if (cartBuy) {
@@ -613,6 +618,10 @@ class ShopApp extends PolymerElement {
   _onClearCart() {
     this.$.cart.clearCart();
     this._announce('Cart cleared');
+  }
+
+  _onConfirmation() {
+    this.set('route.path', '/confirmation');
   }
 
   // Elements in the app can notify a change to be a11y announced.

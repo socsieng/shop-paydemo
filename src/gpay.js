@@ -1,4 +1,9 @@
 let _client;
+let _googlePayLoadedResolver;
+
+const _paymentClientPromise = new Promise(resolve => {
+  _googlePayLoadedResolver = resolve;
+});
 
 const shippingOptions = [
   {
@@ -14,6 +19,10 @@ const shippingOptions = [
     "price": 5.00
   }
 ];
+
+window.addEventListener('load', () => {
+  _googlePayLoadedResolver(google.payments.api.PaymentsClient);
+});
 
 export default class GPay {
   static get clientConfiguration() {
@@ -36,11 +45,10 @@ export default class GPay {
         allowedCardNetworks: ['AMEX', 'DISCOVER', 'INTERAC', 'JCB', 'MASTERCARD', 'VISA'],
       },
       tokenizationSpecification: {
-        type: 'PAYMENT_GATEWAY',
+        type: 'DIRECT',
         parameters: {
-          'gateway': 'stripe',
-          'stripe:version': '2018-10-31',
-          'stripe:publishableKey': 'pk_test_MNKMwKAvgdo2yKOhIeCOE6MZ00yS3mWShu',
+          'protocolVersion': 'ECv2',
+          'publicKey': 'BMzk6xvwPgU8vjB6O/HnFFkMQL/w17yIoKy/6KuRYjOrh0eV12xM6guaYPHdgMHyUzTm9/Vi7KRu4tuRmhm6nv8=',
         },
       },
     };
@@ -61,11 +69,14 @@ export default class GPay {
     };
   }
 
-  static get client() {
-    if (!_client) {
-      _client = new google.payments.api.PaymentsClient(GPay.clientConfiguration);
-    }
+  static getClient() {
+    return _paymentClientPromise
+      .then(PaymentsClient => {
+        if (!_client) {
+          _client = new PaymentsClient(GPay.clientConfiguration);
+        }
 
-    return _client;
+        return _client;
+      });
   }
 }
