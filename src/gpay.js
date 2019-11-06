@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
 export default class GPay {
   static get clientConfiguration() {
     return {
-      environment: 'PRODUCTION',
+      environment: 'TEST',
       // paymentDataCallbacks: {
       //   onPaymentDataChanged: (data) => {
       //     console.log('onPaymentDataChanged', data);
@@ -44,11 +44,19 @@ export default class GPay {
         allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
         allowedCardNetworks: ['AMEX', 'DISCOVER', 'INTERAC', 'JCB', 'MASTERCARD', 'VISA'],
       },
+      // tokenizationSpecification: {
+      //   type: 'DIRECT',
+      //   parameters: {
+      //     'protocolVersion': 'ECv2',
+      //     'publicKey': 'BMzk6xvwPgU8vjB6O/HnFFkMQL/w17yIoKy/6KuRYjOrh0eV12xM6guaYPHdgMHyUzTm9/Vi7KRu4tuRmhm6nv8=',
+      //   },
+      // },
       tokenizationSpecification: {
-        type: 'DIRECT',
+        type: 'PAYMENT_GATEWAY',
         parameters: {
-          'protocolVersion': 'ECv2',
-          'publicKey': 'BMzk6xvwPgU8vjB6O/HnFFkMQL/w17yIoKy/6KuRYjOrh0eV12xM6guaYPHdgMHyUzTm9/Vi7KRu4tuRmhm6nv8=',
+          'gateway': 'stripe',
+          'stripe:version': '2018-10-31',
+          'stripe:publishableKey': 'pk_test_MNKMwKAvgdo2yKOhIeCOE6MZ00yS3mWShu',
         },
       },
     };
