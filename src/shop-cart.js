@@ -1,6 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shop-button.js';
-import './shop-buy-button.js';
+import './shop-gpay-buy-button.js';
+import './shop-pr-buy-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
@@ -31,7 +32,7 @@ class ShopCart extends PolymerElement {
 
       .buy-buttons > * {
         margin-bottom: 4px;
-        display: block;
+        width: 100%;
       }
 
     </style>
@@ -58,7 +59,8 @@ class ShopCart extends PolymerElement {
       </div>
 
       <div class="buy-buttons">
-        <shop-buy-button on-buy="[[_buyCart]]"></shop-buy-button>
+        <shop-gpay-buy-button on-buy="[[_buyCartGooglePay]]"></shop-gpay-buy-button>
+        <shop-pr-buy-button on-buy="[[_buyCartPaymentRequest]]"></shop-pr-buy-button>
         <shop-button>
           <a href="/checkout">Checkout</a>
         </shop-button>
@@ -88,7 +90,8 @@ class ShopCart extends PolymerElement {
 
   constructor() {
     super();
-    this._buyCart = this._buyCart.bind(this);
+    this._buyCartGooglePay = this._buyCartGooglePay.bind(this);
+    this._buyCartPaymentRequest = this._buyCartPaymentRequest.bind(this);
   }
 
   _formatTotal(total) {
@@ -111,10 +114,17 @@ class ShopCart extends PolymerElement {
     }
   }
 
-  _buyCart() {
+  _buyCartGooglePay() {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('buy-cart', {
-      bubbles: true, composed: true
+      bubbles: true, composed: true, detail: {method: 'google-pay'}
+    }));
+  }
+
+  _buyCartPaymentRequest() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-cart', {
+      bubbles: true, composed: true, detail: {method: 'payment-request'}
     }));
   }
 }

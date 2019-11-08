@@ -2,7 +2,8 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-button.js';
-import './shop-buy-button.js';
+import './shop-gpay-buy-button.js';
+import './shop-pr-buy-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 import './shop-input.js';
@@ -100,6 +101,11 @@ class ShopCheckout extends PolymerElement {
         border-bottom: 1px solid #ccc;
       }
 
+      .buy-buttons > * {
+        margin-bottom: 4px;
+        width: 100%;
+      }
+
       @media (max-width: 767px) {
 
         .grid {
@@ -119,7 +125,8 @@ class ShopCheckout extends PolymerElement {
       <iron-pages id="pages" selected="[[state]]" attr-for-selected="state">
         <div state="init">
           <div class="buy-buttons">
-            <shop-buy-button on-buy="[[_buyCart]]" />
+            <shop-gpay-buy-button on-buy="[[_buyCartGooglePay]]"></shop-gpay-buy-button>
+            <shop-pr-buy-button on-buy="[[_buyCartPaymentRequest]]"></shop-pr-buy-button>
           </div>
           <iron-form id="checkoutForm"
               on-iron-form-response="_didReceiveResponse"
@@ -500,7 +507,8 @@ class ShopCheckout extends PolymerElement {
 
   constructor() {
     super();
-    this._buyCart = this._buyCart.bind(this);
+    this._buyCartGooglePay = this._buyCartGooglePay.bind(this);
+    this._buyCartPaymentRequest = this._buyCartPaymentRequest.bind(this);
   }
 
   _submit(e) {
@@ -650,10 +658,17 @@ class ShopCheckout extends PolymerElement {
     }
   }
 
-  _buyCart() {
+  _buyCartGooglePay() {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('buy-cart', {
-      bubbles: true, composed: true
+      bubbles: true, composed: true, detail: {method: 'google-pay'}
+    }));
+  }
+
+  _buyCartPaymentRequest() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-cart', {
+      bubbles: true, composed: true, detail: {method: 'payment-request'}
     }));
   }
 

@@ -1,11 +1,16 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import GPay from './gpay.js';
+import Settings from './settings.js';
 
-class ShopBuyButton extends PolymerElement {
+class ShopGooglePayBuyButton extends PolymerElement {
 
   static get template() {
     return html`
     <style>
+      :host {
+        display: inline-block;
+      }
+
       #container .gpay-button.long {
         width: 100%;
       }
@@ -16,7 +21,7 @@ class ShopBuyButton extends PolymerElement {
     `;
   }
 
-  static get is() { return 'shop-buy-button'; }
+  static get is() { return 'shop-gpay-buy-button'; }
 
   static get properties() {
     return {
@@ -26,7 +31,10 @@ class ShopBuyButton extends PolymerElement {
 
   ready() {
     super.ready();
-    this._initializeButton();
+
+    if (Settings.get('gp') === '1') {
+      this._initializeButton();
+    }
   }
 
   _initializeButton() {
@@ -70,4 +78,4 @@ class ShopBuyButton extends PolymerElement {
   }
 }
 
-customElements.define(ShopBuyButton.is, ShopBuyButton);
+customElements.define(ShopGooglePayBuyButton.is, ShopGooglePayBuyButton);

@@ -15,6 +15,7 @@ import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import GPay from './gpay.js';
+import PaymentRequestFactory from './payment-request-factory';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -369,8 +370,8 @@ class ShopApp extends PolymerElement {
     this.removeAttribute('unresolved');
     // listen for custom events
     this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
-    this.addEventListener('buy-item', (e)=>this._onBuyItemWithGoogle(e));
-    this.addEventListener('buy-cart', (e)=>this._onBuyCartWithGoogle(e));
+    this.addEventListener('buy-item', (e)=>this._onBuyItem(e));
+    this.addEventListener('buy-cart', (e)=>this._onBuyCart(e));
     this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     this.addEventListener('change-section', (e)=>this._onChangeSection(e));
@@ -527,23 +528,30 @@ class ShopApp extends PolymerElement {
     this._announce('Item added to the cart');
   }
 
-  _onBuyItemWithGoogle(event) {
+  _onBuyItem(event) {
     const displayItems = this._getDisplayItemsFromItem(event.detail);
-    this._requestPayment(displayItems)
+    this._requestPayment(displayItems, event.detail.method)
       .then(instrument => {
         return this._processPayment(instrument, false);
       });
   }
 
-  _onBuyCartWithGoogle(event) {
+  _onBuyCart(event) {
     const displayItems = this._getDisplayItemsFromCart(event.detail);
-    this._requestPayment(displayItems)
+    this._requestPayment(displayItems, event.detail.method)
       .then(instrument => {
         return this._processPayment(instrument, true);
       });
   }
 
-  _requestPayment(items) {
+  _requestPayment(items, method) {
+    if (method === 'google-pay') {
+      return this._showGooglePay(items);
+    }
+    return this._showPaymentRequest(items);
+  }
+
+  _showGooglePay(items) {
     const total = items.reduce((sum, item) => {
       return sum + parseFloat(item.amount.value);
     }, 0);
@@ -570,6 +578,28 @@ class ShopApp extends PolymerElement {
         } else if (err.statusCode === 'CANCELED') {
           this._announce('Payment cancelled.');
         }
+      });
+  }
+
+  _showPaymentRequest(items) {
+    const total = items.reduce((sum, item) => {
+      return sum + parseFloat(item.amount.value);
+    }, 0);
+
+    const factory = new PaymentRequestFactory();
+    var paymentRequest = factory.createPaymentRequest({
+      total: {
+        label: 'Total',
+        amount: {
+          currency: 'USD',
+          value: total.toFixed(2),
+        },
+      },
+    }, { requestShipping: true });
+
+    return paymentRequest.show()
+      .then(paymentResponse => {
+        paymentResponse.complete();
       });
   }
 

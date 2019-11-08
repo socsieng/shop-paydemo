@@ -1,7 +1,8 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-buy-button.js';
+import './shop-gpay-buy-button.js';
+import './shop-pr-buy-button.js';
 import './shop-button.js';
 import './shop-category-data.js';
 import './shop-common-styles.js';
@@ -189,10 +190,11 @@ class ShopDetail extends PolymerElement {
           <p id="desc"></p>
         </div>
         <div class="buttons">
+          <shop-gpay-buy-button on-buy="[[_buyItemGooglePay]]"></shop-gpay-buy-button>
+          <shop-pr-buy-button on-buy="[[_buyItemPaymentRequest]]"></shop-pr-buy-button>
           <shop-button>
             <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
           </shop-button>
-          <shop-buy-button on-buy="[[_buyItem]]" />
         </div>
       </div>
     </div>
@@ -239,7 +241,8 @@ class ShopDetail extends PolymerElement {
 
   constructor() {
     super();
-    this._buyItem = this._buyItem.bind(this);
+    this._buyItemGooglePay = this._buyItemGooglePay.bind(this);
+    this._buyItemPaymentRequest = this._buyItemPaymentRequest.bind(this);
   }
 
   _itemChanged(item, visible) {
@@ -291,13 +294,25 @@ class ShopDetail extends PolymerElement {
       }}));
   }
 
-  _buyItem() {
+  _buyItemGooglePay() {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('buy-item', {
       bubbles: true, composed: true, detail: {
         item: this.item,
         quantity: parseInt(this.$.quantitySelect.value, 10),
-        size: this.$.sizeSelect.value
+        size: this.$.sizeSelect.value,
+        method: 'google-pay',
+      }}));
+  }
+
+  _buyItemPaymentRequest() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('buy-item', {
+      bubbles: true, composed: true, detail: {
+        item: this.item,
+        quantity: parseInt(this.$.quantitySelect.value, 10),
+        size: this.$.sizeSelect.value,
+        method: 'payment-request',
       }}));
   }
 
