@@ -587,7 +587,7 @@ class ShopApp extends PolymerElement {
     }, 0);
 
     const factory = new PaymentRequestFactory();
-    var paymentRequest = factory.createPaymentRequest({
+    let paymentDetails = {
       total: {
         label: 'Total',
         amount: {
@@ -595,7 +595,23 @@ class ShopApp extends PolymerElement {
           value: total.toFixed(2),
         },
       },
-    }, { requestShipping: true });
+      shippingOptions: [{
+        id: 'free',
+        label: 'Free shipping',
+        amount: {
+          currency: 'USD',
+          value: '0.00',
+        },
+        selected: true,
+      }],
+    };
+    var paymentRequest = factory.createPaymentRequest(paymentDetails, { requestShipping: true });
+
+    paymentRequest.onshippingaddresschange = event => {
+      const pr = event.target;
+      event.updateWith({...paymentDetails});
+    };
+    paymentRequest.onshippingoptionchange = paymentRequest.onshippingaddresschange;
 
     return paymentRequest.show()
       .then(paymentResponse => {
@@ -612,7 +628,7 @@ class ShopApp extends PolymerElement {
     // https://developers.google.com/web/fundamentals/primers/payment-request/
 
     window.setTimeout(() => {
-      if (instrumentResponse.complete) {
+      if (instrumentResponse && instrumentResponse.complete) {
         instrumentResponse.complete('success')
       }
 
