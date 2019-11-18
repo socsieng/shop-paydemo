@@ -569,15 +569,6 @@ class ShopApp extends PolymerElement {
       .then(paymentResponse => {
         console.log(paymentResponse);
         return paymentResponse;
-      })
-      .catch(err => {
-        // this.payment.preload();
-        if (err.statusCode === 'DEVELOPER_ERROR') {
-          console.error('There\'s a configuration error');
-          // Do nothing
-        } else if (err.statusCode === 'CANCELED') {
-          this._announce('Payment cancelled.');
-        }
       });
   }
 
