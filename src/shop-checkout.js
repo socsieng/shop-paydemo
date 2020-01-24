@@ -657,7 +657,7 @@ class ShopCheckout extends PolymerElement {
     body.cartItemsQuantity = [];
 
     this.cart.forEach((cartItem) => {
-      body.cartItemsId.push(cartItem.item.name);
+      body.cartItemsId.push(cartItem.item.sku);
       body.cartItemsQuantity.push(cartItem.quantity);
     });
   }

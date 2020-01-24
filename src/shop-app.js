@@ -538,23 +538,30 @@ class ShopApp extends PolymerElement {
   }
 
   _onPaymentSelected(event) {
+    let promise;
     const { paymentResponse, context } = event.detail;
     if (context.method === 'google-pay') {
-      this._processGooglePayPayment(paymentResponse, context);
+      promise = this._processGooglePayPayment(paymentResponse, context);
     } else if (context.method === 'payment-request') {
-      this._processPaymentRequestPayment(paymentResponse, context);
+      promise = this._processPaymentRequestPayment(paymentResponse, context);
     }
 
-    if (context.type === 'cart') {
-      this.dispatchEvent(new CustomEvent('clear-cart', {
-        bubbles: true, composed: true
-      }));
-    }
+    if (promise) {
+      promise.then(() => {
+        if (context.type === 'cart') {
+          this.dispatchEvent(new CustomEvent('clear-cart', {
+            bubbles: true, composed: true
+          }));
+        }
 
-    this.dispatchEvent(new CustomEvent('confirmation', {
-      bubbles: true, composed: true
-    }));
-}
+        this.dispatchEvent(new CustomEvent('confirmation', {
+          bubbles: true, composed: true
+        }));
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+  }
 
   _onConfirmation(event) {
     this.set('route.path', '/confirmation');
@@ -562,10 +569,57 @@ class ShopApp extends PolymerElement {
 
   _processGooglePayPayment(paymentResponse, context) {
     console.log('Process Google Pay Payment', paymentResponse, context);
+    return this._processPayment(
+      context,
+      {
+        tokenizationData: paymentResponse.paymentMethodData.tokenizationData,
+      },
+      {
+        shippingAddress: paymentResponse.shippingAddress,
+      },
+    );
   }
 
   _processPaymentRequestPayment(paymentResponse, context) {
     console.log('Process Payment Request Payment', paymentResponse, context);
+    return this._processPayment(
+      context,
+      {
+        cardDetails: paymentResponse.details,
+        methodName: paymentResponse.methodName,
+      },
+      {
+        shppingAddress: paymentResponse.shippingAddress,
+        shippingOption: paymentResponse.shippingOption,
+      },
+    );
+  }
+
+  _processPayment(orderInformation, paymentDetails, shippingDetails) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.addEventListener('load', e => {
+        resolve(e.target.responseText);
+      });
+      xhr.addEventListener('error', e => {
+        reject(e);
+      });
+
+      const body = {
+        items: orderInformation.items.map(item => ({
+          sku: item.item.sku,
+          size: item.size,
+          quantity: item.quantity,
+        })),
+        paymentMethod: orderInformation.method,
+        paymentDetails,
+        shippingDetails,
+      };
+
+      xhr.open('POST', '/api/orders');
+      xhr.setRequestHeader('content-type', 'application/json');
+      xhr.send(JSON.stringify(body));
+    });
   }
 
   _onClearCart() {

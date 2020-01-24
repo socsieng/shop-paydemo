@@ -40,7 +40,7 @@ class ShopListItem extends PolymerElement {
 
     </style>
 
-    <shop-image src="[[item.image]]" alt="[[item.title]]"></shop-image>
+    <shop-image src="[[item.thumbnail]]" alt="[[item.title]]"></shop-image>
     <div class="title">[[item.title]]</div>
     <span class="price">[[_formatPrice(item.price)]]</span>
 `;

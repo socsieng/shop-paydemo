@@ -82,12 +82,12 @@ class ShopCategoryData extends PolymerElement {
     return categoryObj;
   }
 
-  _computeItem(items, itemName) {
-    if (!items || !itemName) {
+  _computeItem(items, sku) {
+    if (!items || !sku) {
       return;
     }
     for (let i = 0, item; item = items[i]; ++i) {
-      if (item.name === itemName) {
+      if (item.sku === sku) {
         return item;
       }
     }
@@ -100,7 +100,7 @@ class ShopCategoryData extends PolymerElement {
       return;
     }
     this._getResource({
-      url: 'data/' + category.name + '.json',
+      url: 'api/products?category=' + category.name,
       onLoad(e) {
         this.set('category.items', JSON.parse(e.target.responseText));
       },

@@ -154,7 +154,7 @@ class ShopDetail extends PolymerElement {
         failure="{{failure}}"></shop-category-data>
 
     <div id="content" hidden$="[[failure]]">
-      <shop-image alt="[[item.title]]" src="[[item.largeImage]]"></shop-image>
+      <shop-image alt="[[item.title]]" src="[[item.image]]"></shop-image>
       <div class="detail" has-content$="[[_isDefined(item)]]">
         <h1>[[item.title]]</h1>
         <div class="price">[[_formatPrice(item.price)]]</div>
@@ -162,11 +162,9 @@ class ShopDetail extends PolymerElement {
           <shop-select>
             <label id="sizeLabel" prefix>Size</label>
             <select id="sizeSelect" aria-labelledby="sizeLabel">
-              <option value="XS">XS</option>
-              <option value="S">S</option>
-              <option value="M" selected>M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
+              <template is="dom-repeat" items="[[item.variations]]" as="size">
+                <option value="[[size.title]]">[[size.title]]</option>
+              </template>
             </select>
             <shop-md-decorator aria-hidden="true">
               <shop-underline></shop-underline>
@@ -268,21 +266,21 @@ class ShopDetail extends PolymerElement {
   }}
 
   static get observers() { return [
-    '_itemChanged(item, visible)'
+    '_itemChanged(item, visible)',
+    '_updateSizes(item)',
   ]}
 
   _itemChanged(item, visible) {
     if (visible) {
       this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
         microTask, () => {
-          // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
-          // unescape it ("<br>") and set it as innerHTML.
-          let text = item ? item.description : '';
+          let text = item ? item.descriptionHtml : '';
           this.$.desc.innerHTML = this._unescapeText(text);
+
+          this._updateSizes(item);
 
           // Reset the select menus.
           this.quantity = 1;
-          this.$.sizeSelect.value = 'M';
 
           this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
           this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
@@ -321,8 +319,19 @@ class ShopDetail extends PolymerElement {
   }
 
   _quantityChanged(q) {
+    if (typeof q === 'string') {
+      this.quantity = parseInt(q, 10);
+    }
     this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
     this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
+  }
+
+  _updateSizes(item) {
+    if (item) {
+      this.$.sizeSelect.value = (item.variations.find(v => v.title === 'M') || item.variations[0]).title;
+    } else {
+      this.$.sizeSelect.value = 'M';
+    }
   }
 
   _unescapeText(text) {

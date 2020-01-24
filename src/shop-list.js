@@ -163,7 +163,7 @@ class ShopList extends PolymerElement {
   _getItemHref(item) {
     // By returning null when `itemId` is undefined, the href attribute won't be set and
     // the link will be disabled.
-    return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
+    return item.sku ? ['/detail', this.category.name, item.sku].join('/') : null;
   }
 
   _getPluralizedQuantity(quantity) {

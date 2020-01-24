@@ -33,7 +33,7 @@ class ShopCartData extends PolymerElement {
   }}
 
   addItem(detail) {
-    let i = this._indexOfEntry(detail.item.name, detail.size);
+    let i = this._indexOfEntry(detail.item.sku, detail.size);
     if (i !== -1) {
       detail.quantity += this.cart[i].quantity;
     }
@@ -41,7 +41,7 @@ class ShopCartData extends PolymerElement {
   }
 
   setItem(detail) {
-    let i = this._indexOfEntry(detail.item.name, detail.size);
+    let i = this._indexOfEntry(detail.item.sku, detail.size);
     if (detail.quantity === 0) {
       // Remove item from cart when the new quantity is 0.
       if (i !== -1) {
@@ -82,11 +82,11 @@ class ShopCartData extends PolymerElement {
     return 0;
   }
 
-  _indexOfEntry(name, size) {
+  _indexOfEntry(sku, size) {
     if (this.cart) {
       for (let i = 0; i < this.cart.length; ++i) {
         let entry = this.cart[i];
-        if (entry.item.name === name && entry.size === size) {
+        if (entry.item.sku === sku && entry.size === size) {
           return i;
         }
       }

@@ -156,12 +156,12 @@ class ShopCartItem extends PolymerElement {
 
     </style>
 
-    <a href\$="/detail/[[entry.item.category]]/[[entry.item.name]]" title\$="[[entry.item.title]]">
+    <a href\$="/detail/[[entry.item.category]]/[[entry.item.sku]]" title\$="[[entry.item.title]]">
       <shop-image src="[[entry.item.image]]" alt="[[entry.item.title]]"></shop-image>
     </a>
     <div class="flex">
       <div class="name">
-        <a href\$="/detail/[[entry.item.category]]/[[entry.item.name]]">[[entry.item.title]]</a>
+        <a href\$="/detail/[[entry.item.category]]/[[entry.item.sku]]">[[entry.item.title]]</a>
       </div>
       <div class="detail">
         <div class="quantity">
