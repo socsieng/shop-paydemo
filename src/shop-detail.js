@@ -8,6 +8,7 @@ import './shop-category-data.js';
 import './shop-common-styles.js';
 import './shop-image.js';
 import './shop-select.js';
+import './spot-buy-button.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import config from './shop-configuration.js';
@@ -204,6 +205,12 @@ class ShopDetail extends PolymerElement {
             request-shipping="[[config.paymentrequest.requestShipping]]"
             on-payment-data-result="[[_onPaymentRequestPaymentDataResult]]"
           ></payment-request-button>
+          <spot-buy-button id="spotBuyButton"
+            payment-methods="[[config.paymentrequest.paymentMethods]]"
+            shipping-options="[[config.paymentrequest.shippingOptions]]"
+            request-shipping="[[config.paymentrequest.requestShipping]]"
+            on-payment-data-result="[[_onPaymentRequestPaymentDataResult]]"
+          ></spot-buy-button>
           <shop-button>
             <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
           </shop-button>

@@ -58,6 +58,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <shop-app unresolved>SHOP</shop-app>
 
   <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script>
+    if (/gpay-microapps/i.test(window.navigator.userAgent)) {
+      document.write(`<script src="https://microapps.google.com/apis/v1alpha/microapps.js"><\/script>`);
+    }
+  </script>
+  <script>
+    if (window.microapps) {
+      console.log('running as a microapp');
+    }
+  </script>
   <script type="module" src="src/shop-app.js"></script>
 
   <script>

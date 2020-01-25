@@ -143,6 +143,9 @@ class GooglePayButton extends PolymerElement {
   }
 
   _initializeButton() {
+    // do not use google pay button when running as a microapp
+    if (window.microapps) { return Promise.resolve(); }
+
     return loadScript('https://pay.google.com/gp/p/js/pay.js')
       .then(() => {
         this._client = new google.payments.api.PaymentsClient(this._getClientConfig());
