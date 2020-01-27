@@ -572,6 +572,10 @@ class ShopApp extends PolymerElement {
     return this._processPayment(
       context,
       {
+        email: paymentResponse.email,
+        name: paymentResponse.shippingAddress.name,
+      },
+      {
         tokenizationData: paymentResponse.paymentMethodData.tokenizationData,
       },
       {
@@ -585,17 +589,21 @@ class ShopApp extends PolymerElement {
     return this._processPayment(
       context,
       {
+        email: paymentResponse.payerEmail,
+        name: paymentResponse.payerName,
+      },
+      {
         cardDetails: paymentResponse.details,
         methodName: paymentResponse.methodName,
       },
       {
-        shppingAddress: paymentResponse.shippingAddress,
+        shippingAddress: paymentResponse.shippingAddress,
         shippingOption: paymentResponse.shippingOption,
       },
     );
   }
 
-  _processPayment(orderInformation, paymentDetails, shippingDetails) {
+  _processPayment(orderInformation, customerDetails, paymentDetails, shippingDetails) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.addEventListener('load', e => {
@@ -614,6 +622,7 @@ class ShopApp extends PolymerElement {
         paymentMethod: orderInformation.method,
         paymentDetails,
         shippingDetails,
+        customerDetails,
       };
 
       xhr.open('POST', '/api/orders');

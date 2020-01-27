@@ -150,12 +150,15 @@ class ShopCheckout extends PolymerElement {
                     appearance="[[config.googlepay.appearance]]"
                     on-payment-data-result="[[_onGooglePayPaymentDataResult]]"
                     on-payment-authorized="[[config.googlepay.onPaymentAuthorized]]"
-                  ></google-pay-button>
+                    email-required="true"
+                    ></google-pay-button>
                   <payment-request-button id="paymentRequestButton"
                     payment-methods="[[config.paymentrequest.paymentMethods]]"
                     shipping-options="[[config.paymentrequest.shippingOptions]]"
                     request-shipping="[[config.paymentrequest.requestShipping]]"
                     on-payment-data-result="[[_onPaymentRequestPaymentDataResult]]"
+                    request-payer-email="true"
+                    request-payer-name="true"
                   ></payment-request-button>
                 </div>
               </div>

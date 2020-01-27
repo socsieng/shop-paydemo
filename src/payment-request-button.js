@@ -53,6 +53,9 @@ class PaymentRequestButton extends PolymerElement {
       details: Object,
       shippingOptions: Array,
       requestShipping: Boolean,
+      requestPayerEmail: Boolean,
+      requestPayerName: Boolean,
+      requestPayerPhone: Boolean,
       onPaymentDataChanged: Function,
       onPaymentAuthorized: Function,
       onPaymentDataResult: Function,
@@ -106,6 +109,9 @@ class PaymentRequestButton extends PolymerElement {
       ...details,
     }, {
       requestShipping: this.requestShipping,
+      requestPayerEmail: this.requestPayerEmail,
+      requestPayerName: this.requestPayerName,
+      requestPayerPhone: this.requestPayerPhone,
     });
 
     return paymentRequest.show()
