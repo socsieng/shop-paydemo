@@ -107,10 +107,7 @@ class ShopCart extends PolymerElement {
 
       total: Number,
 
-      cart: {
-        type: Array,
-        observer: '_cartChanged',
-      },
+      cart: Array,
 
       visible: {
         type: Boolean,
@@ -125,6 +122,10 @@ class ShopCart extends PolymerElement {
     }
 
   }
+
+  static get observers() { return [
+    '_refreshDetails(cart, total)',
+  ]}
 
   constructor() {
     super();
@@ -179,7 +180,7 @@ class ShopCart extends PolymerElement {
         displayItems: this.cart.map(i => ({
           label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
           type: 'LINE_ITEM',
-          price: (i.item.price * i.quantity).toFixed(2),
+          price: (i.variant.price * i.quantity).toFixed(2),
         })),
       };
     }
@@ -200,7 +201,7 @@ class ShopCart extends PolymerElement {
           type: 'LINE_ITEM',
           amount: {
             currency: 'USD',
-            value: (i.item.price * i.quantity).toFixed(2),
+            value: (i.variant.price * i.quantity).toFixed(2),
           }
         })),
       };
@@ -208,7 +209,7 @@ class ShopCart extends PolymerElement {
     return null;
   }
 
-  _cartChanged() {
+  _refreshDetails() {
     this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
     this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
   }
