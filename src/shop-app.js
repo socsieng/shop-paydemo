@@ -616,7 +616,7 @@ class ShopApp extends PolymerElement {
       const body = {
         items: orderInformation.items.map(item => ({
           sku: item.item.sku,
-          size: item.size,
+          size: item.variant ? item.variant.title : undefined,
           quantity: item.quantity,
         })),
         paymentMethod: orderInformation.method,

@@ -177,7 +177,7 @@ class ShopCart extends PolymerElement {
         currencyCode: 'USD',
         countryCode: 'US',
         displayItems: this.cart.map(i => ({
-          label: `${i.item.title} x ${i.quantity}`,
+          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
           type: 'LINE_ITEM',
           price: (i.item.price * i.quantity).toFixed(2),
         })),
@@ -196,7 +196,7 @@ class ShopCart extends PolymerElement {
           },
         },
         displayItems: this.cart.map(i => ({
-          label: `${i.item.title} x ${i.quantity}`,
+          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
           type: 'LINE_ITEM',
           amount: {
             currency: 'USD',

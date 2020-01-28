@@ -33,7 +33,7 @@ class ShopCartData extends PolymerElement {
   }}
 
   addItem(detail) {
-    let i = this._indexOfEntry(detail.item.sku, detail.size);
+    let i = this._indexOfEntry(detail.item.sku, detail.variant);
     if (i !== -1) {
       detail.quantity += this.cart[i].quantity;
     }
@@ -41,7 +41,7 @@ class ShopCartData extends PolymerElement {
   }
 
   setItem(detail) {
-    let i = this._indexOfEntry(detail.item.sku, detail.size);
+    let i = this._indexOfEntry(detail.item.sku, detail.variant);
     if (detail.quantity === 0) {
       // Remove item from cart when the new quantity is 0.
       if (i !== -1) {
@@ -56,6 +56,16 @@ class ShopCartData extends PolymerElement {
         this.push('cart', detail);
       }
     }
+  }
+
+  getCartSummary() {
+    if (this.cart) {
+      return this.cart.map(i => ({
+        label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
+        price: (i.variant.price * i.quantity),
+      }));
+    }
+    return [];
   }
 
   clearCart() {
@@ -75,18 +85,18 @@ class ShopCartData extends PolymerElement {
   _computeTotal() {
     if (this.cart) {
       return this.cart.reduce((total, entry) => {
-        return total + entry.quantity * entry.item.price;
+        return total + entry.quantity * entry.variant.price;
       }, 0);
     }
 
     return 0;
   }
 
-  _indexOfEntry(sku, size) {
+  _indexOfEntry(sku, variant) {
     if (this.cart) {
       for (let i = 0; i < this.cart.length; ++i) {
         let entry = this.cart[i];
-        if (entry.item.sku === sku && entry.size === size) {
+        if (entry.item.sku === sku && entry.variant === variant) {
           return i;
         }
       }

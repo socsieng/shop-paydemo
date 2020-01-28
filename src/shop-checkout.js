@@ -403,7 +403,7 @@ class ShopCheckout extends PolymerElement {
                   <dom-repeat items="[[cart]]" as="entry">
                     <template>
                       <div class="row order-summary-row">
-                        <div class="flex">[[entry.item.title]]</div>
+                        <div class="flex">[[entry.item.title]] - [[entry.variant.title]]</div>
                         <div>[[_getEntryTotal(entry)]]</div>
                       </div>
                     </template>
@@ -701,7 +701,7 @@ class ShopCheckout extends PolymerElement {
   }
 
   _getEntryTotal(entry) {
-    return this._formatPrice(entry.quantity * entry.item.price);
+    return this._formatPrice(entry.quantity * entry.variant.price);
   }
 
   _visibleChanged(visible) {
@@ -739,9 +739,9 @@ class ShopCheckout extends PolymerElement {
         currencyCode: 'USD',
         countryCode: 'US',
         displayItems: this.cart.map(i => ({
-          label: `${i.item.title} x ${i.quantity}`,
+          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
           type: 'LINE_ITEM',
-          price: (i.item.price * i.quantity).toFixed(2),
+          price: (i.variant.price * i.quantity).toFixed(2),
         })),
       };
     }
@@ -758,11 +758,11 @@ class ShopCheckout extends PolymerElement {
           },
         },
         displayItems: this.cart.map(i => ({
-          label: `${i.item.title} x ${i.quantity}`,
+          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
           type: 'LINE_ITEM',
           amount: {
             currency: 'USD',
-            value: (i.item.price * i.quantity).toFixed(2),
+            value: (i.variant.price * i.quantity).toFixed(2),
           }
         })),
       };

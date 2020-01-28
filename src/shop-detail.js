@@ -158,13 +158,13 @@ class ShopDetail extends PolymerElement {
       <shop-image alt="[[item.title]]" src="[[item.image]]"></shop-image>
       <div class="detail" has-content$="[[_isDefined(item)]]">
         <h1>[[item.title]]</h1>
-        <div class="price">[[_formatPrice(item.price)]]</div>
+        <div class="price">[[_formatPrice(price)]]</div>
         <div class="pickers">
           <shop-select>
             <label id="sizeLabel" prefix>Size</label>
-            <select id="sizeSelect" aria-labelledby="sizeLabel">
-              <template is="dom-repeat" items="[[item.variations]]" as="size">
-                <option value="[[size.title]]">[[size.title]]</option>
+            <select id="sizeSelect" aria-labelledby="sizeLabel" onChange="{{_variantChanged}}">
+              <template is="dom-repeat" items="[[item.variations]]" as="v">
+                <option value="[[v.title]]" selected?="[[_isVariantSelected(v)]]">[[v.title]]</option>
               </template>
             </select>
             <shop-md-decorator aria-hidden="true">
@@ -238,6 +238,7 @@ class ShopDetail extends PolymerElement {
 
     this._onGooglePayPaymentDataResult = this._onGooglePayPaymentDataResult.bind(this);
     this._onPaymentRequestPaymentDataResult = this._onPaymentRequestPaymentDataResult.bind(this);
+    this._variantChanged = this._variantChanged.bind(this);
   }
 
   static get is() { return 'shop-detail'; }
@@ -249,7 +250,10 @@ class ShopDetail extends PolymerElement {
       value: () => config,
     },
 
+    variant: Object,
+
     item: Object,
+    price: Number,
 
     quantity: {
       type: Number,
@@ -277,20 +281,21 @@ class ShopDetail extends PolymerElement {
 
   static get observers() { return [
     '_itemChanged(item, visible)',
-    '_updateSizes(item)',
+    //'_updateSizes(item)',
   ]}
 
   _itemChanged(item, visible) {
     if (visible) {
       this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
         microTask, () => {
-          let text = item ? item.descriptionHtml : '';
-          this.$.desc.innerHTML = this._unescapeText(text);
-
-          this._updateSizes(item);
-
           // Reset the select menus.
           this.quantity = 1;
+
+          if (item) {
+            this.variant = item.variations.find(v => v.title === 'M') || item.variations[0];
+          }
+
+          this._updateDetails();
 
           this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
           this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
@@ -320,7 +325,7 @@ class ShopDetail extends PolymerElement {
         {
           item: this.item,
           quantity: this.quantity,
-          size: this.$.sizeSelect.value
+          variant: this.variant,
         }
       ],
       type: 'item',
@@ -336,12 +341,31 @@ class ShopDetail extends PolymerElement {
     this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
   }
 
-  _updateSizes(item) {
+  _variantChanged(event) {
+    const item = this.item;
     if (item) {
-      this.$.sizeSelect.value = (item.variations.find(v => v.title === 'M') || item.variations[0]).title;
-    } else {
-      this.$.sizeSelect.value = 'M';
+      const variant = item.variations.find(v => v.title === event.target.value) || item.variations[0];
+      this.variant = variant;
     }
+    this._updateDetails()
+  }
+
+  _isVariantSelected(variant) {
+    return this.variant === variant;
+  }
+
+  _updateDetails() {
+    const item = this.item;
+
+    this.price = this.variant ? this.variant.price : item ? item.price : undefined;
+
+    this.$.desc.innerHTML = this.variant && this.variant.descriptionHtml
+      ? this.variant.descriptionHtml
+      : item
+        ? item.descriptionHtml
+        : '';
+
+    this.$.sizeSelect.value = this.variant ? this.variant.title : undefined;
   }
 
   _unescapeText(text) {
@@ -360,7 +384,7 @@ class ShopDetail extends PolymerElement {
       bubbles: true, composed: true, detail: {
         item: this.item,
         quantity: this.quantity,
-        size: this.$.sizeSelect.value
+        variant: this.variant,
       }}));
   }
 
@@ -380,7 +404,7 @@ class ShopDetail extends PolymerElement {
 
   _getGooglePayTransactionInfo() {
     if (this.item) {
-      const price = this.quantity * this.item.price;
+      const price = this.quantity * this.price;
       return {
         totalPriceStatus: 'FINAL',
         totalPriceLabel: 'Total',
@@ -399,7 +423,7 @@ class ShopDetail extends PolymerElement {
 
   _getPaymentRequestDetails() {
     if (this.item) {
-      const price = this.quantity * this.item.price;
+      const price = this.quantity * this.price;
       return {
         total: {
           label: 'Total',
