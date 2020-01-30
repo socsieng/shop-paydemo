@@ -49,14 +49,25 @@ class SpotBuyButton extends PolymerElement {
 
   static get properties() {
     return {
+      version: {
+        type: Object,
+        value: {
+          major: 2,
+          minor: 0,
+        }
+      },
+      allowedPaymentMethods: Array,
+      merchantInfo: Object,
+      transactionInfo: Object,
+      onPaymentDataResult: Function,
+      onError: Function,
+
       paymentMethods: Array,
       details: Object,
       shippingOptions: Array,
       requestShipping: Boolean,
       onPaymentDataChanged: Function,
       onPaymentAuthorized: Function,
-      onPaymentDataResult: Function,
-      onError: Function,
       onCanMakePaymentChange: Function,
     };
   }
@@ -87,60 +98,24 @@ class SpotBuyButton extends PolymerElement {
     const referenceId = `ref-${new Date().getTime()}`;
 
     const paymentRequest = {
-      apiVersion: 2,
-      apiVersionMinor: 0,
-      allowedPaymentMethods: [{
-        type: 'UPI',
-        parameters: {
-          payeeVpa: 'merchant@psp',
-          payeeName: 'Merchant Name',
-          mcc: '0000',
-          transactionId: referenceId,
-          transactionReferenceId: `${referenceId}txnId`,
-        },
-        tokenizationSpecification: {type: 'DIRECT', parameters: {}}
-      }],
-      merchantInfo: {merchantId: 'Example Merchant'},
-      transactionInfo: {
-        currencyCode: 'INR',
-        countryCode: 'IN',
-        totalPriceStatus: 'FINAL',
-        totalPrice: '10' // set in checkout()
-      }
+      apiVersion: this.version.major,
+      apiVersionMinor: this.version.minor,
+      allowedPaymentMethods: this.allowedPaymentMethods,
+      merchantInfo: this.merchantInfo,
+      transactionInfo: this.transactionInfo,
     };
 
     microapps.requestPayment(paymentRequest).then(response => {
-      console.log('microapps payment');
+      if (this.onPaymentDataResult) {
+        this.onPaymentDataResult(response);
+      }
+      console.log('microapps payment', response);
     }).catch(error => {
+      if (this.onError) {
+        this.onError(error);
+      }
       console.log('microapps error', error);
     });
-    // const details = this.details;
-
-    // if (!details.total.amount.value && details.displayItems) {
-    //   const total = details.displayItems.reduce((sum, item) => sum + parseFloat(item.amount.value), 0);
-    //   details.total.amount.value = total.toFixed(2);
-    // }
-
-    // const paymentRequest = this._buildPaymentRequest({
-    //   shippingOptions: this.shippingOptions,
-    //   ...details,
-    // }, {
-    //   requestShipping: this.requestShipping,
-    // });
-
-    // return paymentRequest.show()
-    //   .then(paymentResponse => {
-    //     if (this.onPaymentDataResult) {
-    //       this.onPaymentDataResult(paymentResponse);
-    //     }
-    //     paymentResponse.complete();
-    //   })
-    //   .catch(error => {
-    //     if (this.onError) {
-    //       this.onError(error);
-    //     }
-    //     console.log('Error', { error, paymentRequest });
-    //   });
   }
 }
 

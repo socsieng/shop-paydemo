@@ -383,6 +383,29 @@ class ShopApp extends PolymerElement {
       window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
       window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
     });
+
+    this._rewriteQueryParameters();
+  }
+
+  _rewriteQueryParameters() {
+    const search = window.location.search;
+    const paramString = search.split('?')[1];
+
+    if (paramString && window.location.pathname === '/') {
+      const pairs = paramString.split('&');
+      const query = {};
+
+      pairs.forEach(pair => {
+        const parts = pair.split('=');
+        query[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+      });
+
+      if (query.category && query.sku) {
+        this.set('route.path', `/detail/${query.category}/${query.sku}`);
+      } else if (query.category) {
+        this.set('route.path', `/list/${query.category}`);
+      }
+    }
   }
 
   _routePageChanged(page) {
@@ -544,6 +567,8 @@ class ShopApp extends PolymerElement {
       promise = this._processGooglePayPayment(paymentResponse, context);
     } else if (context.method === 'payment-request') {
       promise = this._processPaymentRequestPayment(paymentResponse, context);
+    } else if (context.method === 'spot') {
+      promise = this._processSpotPayment(paymentResponse, context);
     }
 
     if (promise) {
@@ -599,6 +624,23 @@ class ShopApp extends PolymerElement {
       {
         shippingAddress: paymentResponse.shippingAddress,
         shippingOption: paymentResponse.shippingOption,
+      },
+    );
+  }
+
+  _processSpotPayment(paymentResponse, context) {
+    console.log('Process Spot Payment', paymentResponse, context);
+    return this._processPayment(
+      context,
+      {
+        // email: paymentResponse.email,
+        // name: paymentResponse.shippingAddress.name,
+      },
+      {
+        // tokenizationData: paymentResponse.paymentMethodData.tokenizationData,
+      },
+      {
+        // shippingAddress: paymentResponse.shippingAddress,
       },
     );
   }

@@ -12,6 +12,7 @@ import './spot-buy-button.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import config from './shop-configuration.js';
+import { createGooglePayPaymentDetails, createPaymentRequestApiPaymentDetails, createSpotPaymentDetails } from './payment-details-factory.js';
 
 class ShopDetail extends PolymerElement {
   static get template() {
@@ -209,10 +210,9 @@ class ShopDetail extends PolymerElement {
             request-payer-name="true"
           ></payment-request-button>
           <spot-buy-button id="spotBuyButton"
-            payment-methods="[[config.paymentrequest.paymentMethods]]"
-            shipping-options="[[config.paymentrequest.shippingOptions]]"
-            request-shipping="[[config.paymentrequest.requestShipping]]"
-            on-payment-data-result="[[_onPaymentRequestPaymentDataResult]]"
+            allowed-payment-methods="[[config.spot.allowedPaymentMethods]]"
+            merchant-info="[[config.spot.merchantInfo]]"
+            on-payment-data-result="[[_onSpotPaymentDataResult]]"
           ></spot-buy-button>
           <shop-button>
             <button on-click="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
@@ -238,6 +238,7 @@ class ShopDetail extends PolymerElement {
 
     this._onGooglePayPaymentDataResult = this._onGooglePayPaymentDataResult.bind(this);
     this._onPaymentRequestPaymentDataResult = this._onPaymentRequestPaymentDataResult.bind(this);
+    this._onSpotPaymentDataResult = this._onSpotPaymentDataResult.bind(this);
     this._variantChanged = this._variantChanged.bind(this);
   }
 
@@ -281,7 +282,6 @@ class ShopDetail extends PolymerElement {
 
   static get observers() { return [
     '_itemChanged(item, visible)',
-    //'_updateSizes(item)',
   ]}
 
   _itemChanged(item, visible) {
@@ -296,9 +296,6 @@ class ShopDetail extends PolymerElement {
           }
 
           this._updateDetails();
-
-          this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
-          this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
 
           this.dispatchEvent(new CustomEvent('change-section', {
             bubbles: true, composed: true, detail: {
@@ -319,6 +316,10 @@ class ShopDetail extends PolymerElement {
     this.config.paymentrequest.onPaymentDataResponse.bind(this)(paymentResponse, this._getPurchaseContext('payment-request'));
   }
 
+  _onSpotPaymentDataResult(paymentResponse) {
+    this.config.spot.onPaymentDataResponse.bind(this)(paymentResponse, this._getPurchaseContext('spot'));
+  }
+
   _getPurchaseContext(method) {
     return {
       items: [
@@ -337,8 +338,7 @@ class ShopDetail extends PolymerElement {
     if (typeof q === 'string') {
       this.quantity = parseInt(q, 10);
     }
-    this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
-    this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
+    this._updateDetails();
   }
 
   _variantChanged(event) {
@@ -347,7 +347,7 @@ class ShopDetail extends PolymerElement {
       const variant = item.variations.find(v => v.title === event.target.value) || item.variations[0];
       this.variant = variant;
     }
-    this._updateDetails()
+    this._updateDetails();
   }
 
   _isVariantSelected(variant) {
@@ -357,21 +357,26 @@ class ShopDetail extends PolymerElement {
   _updateDetails() {
     const item = this.item;
 
-    this.price = this.variant ? this.variant.price : item ? item.price : undefined;
+    if (item) {
+      this.price = this.variant ? this.variant.price : item ? item.price : undefined;
 
-    this.$.desc.innerHTML = this.variant && this.variant.descriptionHtml
-      ? this.variant.descriptionHtml
-      : item
-        ? item.descriptionHtml
-        : '';
+      this.$.desc.innerHTML = this.variant && this.variant.descriptionHtml
+        ? this.variant.descriptionHtml
+        : item
+          ? item.descriptionHtml
+          : '';
 
-    this.$.sizeSelect.value = this.variant ? this.variant.title : undefined;
-  }
+      this.$.sizeSelect.value = this.variant ? this.variant.title : undefined;
 
-  _unescapeText(text) {
-    let elem = document.createElement('textarea');
-    elem.innerHTML = text;
-    return elem.textContent;
+      const cart = [{
+        item,
+        variant: this.variant,
+        quantity: this.quantity,
+      }];
+      this.$.googlePayButton.transactionInfo = createGooglePayPaymentDetails(cart);
+      this.$.paymentRequestButton.details = createPaymentRequestApiPaymentDetails(cart);
+      this.$.spotBuyButton.transactionInfo = createSpotPaymentDetails(cart);
+    }
   }
 
   _formatPrice(price) {
@@ -400,49 +405,6 @@ class ShopDetail extends PolymerElement {
     if (!offline) {
       this._tryReconnect();
     }
-  }
-
-  _getGooglePayTransactionInfo() {
-    if (this.item) {
-      const price = this.quantity * this.price;
-      return {
-        totalPriceStatus: 'FINAL',
-        totalPriceLabel: 'Total',
-        totalPrice: price.toFixed(2),
-        currencyCode: 'USD',
-        countryCode: 'US',
-        displayItems: [{
-          label: `${this.item.title} x ${this.quantity}`,
-          type: 'LINE_ITEM',
-          price: price.toFixed(2),
-        }],
-      };
-    }
-    return null;
-  }
-
-  _getPaymentRequestDetails() {
-    if (this.item) {
-      const price = this.quantity * this.price;
-      return {
-        total: {
-          label: 'Total',
-          amount: {
-            currency: 'USD',
-            value: price.toFixed(2),
-          },
-        },
-        displayItems: [{
-          label: `${this.item.title} x ${this.quantity}`,
-          type: 'LINE_ITEM',
-          amount: {
-            currency: 'USD',
-            value: price.toFixed(2),
-          }
-        }],
-      };
-    }
-    return null;
   }
 
   _isSelected(option, value) {

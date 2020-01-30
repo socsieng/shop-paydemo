@@ -12,6 +12,7 @@ import './shop-checkbox.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import config from './shop-configuration.js';
+import { createGooglePayPaymentDetails, createPaymentRequestApiPaymentDetails } from './payment-details-factory.js';
 
 class ShopCheckout extends PolymerElement {
   static get template() {
@@ -729,48 +730,9 @@ class ShopCheckout extends PolymerElement {
     });
   }
 
-  _getGooglePayTransactionInfo() {
-    if (this.cart) {
-      return {
-        totalPriceStatus: 'FINAL',
-        totalPriceLabel: 'Total',
-        currencyCode: 'USD',
-        countryCode: 'US',
-        displayItems: this.cart.map(i => ({
-          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-          type: 'LINE_ITEM',
-          price: (i.variant.price * i.quantity).toFixed(2),
-        })),
-      };
-    }
-    return null;
-  }
-
-  _getPaymentRequestDetails() {
-    if (this.cart) {
-      return {
-        total: {
-          label: 'Total',
-          amount: {
-            currency: 'USD',
-          },
-        },
-        displayItems: this.cart.map(i => ({
-          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-          type: 'LINE_ITEM',
-          amount: {
-            currency: 'USD',
-            value: (i.variant.price * i.quantity).toFixed(2),
-          }
-        })),
-      };
-    }
-    return null;
-  }
-
   _refreshDetails() {
-    this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
-    this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
+    this.$.googlePayButton.transactionInfo = createGooglePayPaymentDetails(this.cart);
+    this.$.paymentRequestButton.details = createPaymentRequestApiPaymentDetails(this.cart);
   }
 
 }

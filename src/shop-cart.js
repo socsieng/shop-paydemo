@@ -4,7 +4,9 @@ import './payment-request-button.js'
 import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
+import './spot-buy-button.js';
 import config from './shop-configuration.js';
+import { createGooglePayPaymentDetails, createPaymentRequestApiPaymentDetails, createSpotPaymentDetails } from './payment-details-factory.js';
 
 class ShopCart extends PolymerElement {
   static get template() {
@@ -85,8 +87,13 @@ class ShopCart extends PolymerElement {
             request-payer-email="true"
             request-payer-name="true"
           ></payment-request-button>
+          <spot-buy-button id="spotBuyButton"
+            allowed-payment-methods="[[config.spot.allowedPaymentMethods]]"
+            merchant-info="[[config.spot.merchantInfo]]"
+            on-payment-data-result="[[_onSpotPaymentDataResult]]"
+          ></spot-buy-button>
 
-          <shop-button>
+          <shop-button hidden$="[[_isSpot]]">
             <a href="/checkout">Checkout</a>
           </shop-button>
         </div>
@@ -117,6 +124,11 @@ class ShopCart extends PolymerElement {
       _hasItems: {
         type: Boolean,
         computed: '_computeHasItem(cart.length)'
+      },
+
+      _isSpot: {
+        type: Boolean,
+        value: () => !!window.microapps,
       }
 
     }
@@ -132,6 +144,7 @@ class ShopCart extends PolymerElement {
 
     this._onGooglePayPaymentDataResult = this._onGooglePayPaymentDataResult.bind(this);
     this._onPaymentRequestPaymentDataResult = this._onPaymentRequestPaymentDataResult.bind(this);
+    this._onSpotPaymentDataResult = this._onSpotPaymentDataResult.bind(this);
   }
 
   _formatTotal(total) {
@@ -170,48 +183,18 @@ class ShopCart extends PolymerElement {
     });
   }
 
-  _getGooglePayTransactionInfo() {
-    if (this.cart) {
-      return {
-        totalPriceStatus: 'FINAL',
-        totalPriceLabel: 'Total',
-        currencyCode: 'USD',
-        countryCode: 'US',
-        displayItems: this.cart.map(i => ({
-          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-          type: 'LINE_ITEM',
-          price: (i.variant.price * i.quantity).toFixed(2),
-        })),
-      };
-    }
-    return null;
-  }
-
-  _getPaymentRequestDetails() {
-    if (this.cart) {
-      return {
-        total: {
-          label: 'Total',
-          amount: {
-            currency: 'USD',
-          },
-        },
-        displayItems: this.cart.map(i => ({
-          label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-          type: 'LINE_ITEM',
-          amount: {
-            currency: 'USD',
-            value: (i.variant.price * i.quantity).toFixed(2),
-          }
-        })),
-      };
-    }
-    return null;
+  _onSpotPaymentDataResult(paymentResponse) {
+    this.config.googlepay.onPaymentDataResponse.bind(this)(paymentResponse, {
+      items: this.cart,
+      type: 'cart',
+      method: 'spot',
+    });
   }
 
   _refreshDetails() {
-    this.$.googlePayButton.transactionInfo = this._getGooglePayTransactionInfo();
-    this.$.paymentRequestButton.details = this._getPaymentRequestDetails();
+    this.$.googlePayButton.transactionInfo = createGooglePayPaymentDetails(this.cart);
+    this.$.paymentRequestButton.details = createPaymentRequestApiPaymentDetails(this.cart);
+    this.$.spotBuyButton.transactionInfo = createSpotPaymentDetails(this.cart);
   }
 
 }
