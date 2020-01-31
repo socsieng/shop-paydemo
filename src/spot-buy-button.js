@@ -95,8 +95,6 @@ class SpotBuyButton extends PolymerElement {
   }
 
   _handleClick() {
-    const referenceId = `ref-${new Date().getTime()}`;
-
     const paymentRequest = {
       apiVersion: this.version.major,
       apiVersionMinor: this.version.minor,
@@ -105,17 +103,32 @@ class SpotBuyButton extends PolymerElement {
       transactionInfo: this.transactionInfo,
     };
 
-    microapps.requestPayment(paymentRequest).then(response => {
-      if (this.onPaymentDataResult) {
-        this.onPaymentDataResult(response);
-      }
-      console.log('microapps payment', response);
-    }).catch(error => {
-      if (this.onError) {
-        this.onError(error);
-      }
-      console.log('microapps error', error);
-    });
+    let customer = {};
+    microapps.getIdentity()
+      .then(response => {
+        const payload = JSON.parse(atob(response.split('.')[1]));
+
+        customer = {
+          email: payload.email,
+          name: payload.name,
+        };
+      })
+      .finally(() => {
+        microapps.requestPayment(paymentRequest).then(response => {
+          if (this.onPaymentDataResult) {
+            this.onPaymentDataResult({
+              ...response,
+              customer,
+            });
+          }
+          console.log('microapps payment', response);
+        }).catch(error => {
+          if (this.onError) {
+            this.onError(error);
+          }
+          console.log('microapps error', error);
+        });
+      });
   }
 }
 

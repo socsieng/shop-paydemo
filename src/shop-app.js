@@ -633,11 +633,11 @@ class ShopApp extends PolymerElement {
     return this._processPayment(
       context,
       {
-        // email: paymentResponse.email,
-        // name: paymentResponse.shippingAddress.name,
+        email: paymentResponse.customer.email,
+        name: paymentResponse.customer.name,
       },
       {
-        // tokenizationData: paymentResponse.paymentMethodData.tokenizationData,
+        tokenizationData: paymentResponse.paymentMethodData.tokenizationData,
       },
       {
         // shippingAddress: paymentResponse.shippingAddress,
