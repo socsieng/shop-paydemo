@@ -161,7 +161,7 @@ class ShopDetail extends PolymerElement {
         <h1>[[item.title]]</h1>
         <div class="price">[[_formatPrice(price)]]</div>
         <div class="pickers">
-          <shop-select>
+          <shop-select hidden$="[[!hasVariations]]">
             <label id="sizeLabel" prefix>Size</label>
             <select id="sizeSelect" aria-labelledby="sizeLabel" onChange="{{_variantChanged}}">
               <template is="dom-repeat" items="[[item.variations]]" as="v">
@@ -262,6 +262,11 @@ class ShopDetail extends PolymerElement {
       observer: '_quantityChanged',
     },
 
+    hasVariations: {
+      type: Boolean,
+      computed: '_hasVariations(item)',
+    },
+
     route: Object,
 
     routeData: Object,
@@ -291,7 +296,7 @@ class ShopDetail extends PolymerElement {
           // Reset the select menus.
           this.quantity = 1;
 
-          if (item) {
+          if (item && item.variations) {
             this.variant = item.variations.find(v => v.title === 'M') || item.variations[0];
           }
 
@@ -343,7 +348,7 @@ class ShopDetail extends PolymerElement {
 
   _variantChanged(event) {
     const item = this.item;
-    if (item) {
+    if (item && item.variations) {
       const variant = item.variations.find(v => v.title === event.target.value) || item.variations[0];
       this.variant = variant;
     }
@@ -409,6 +414,10 @@ class ShopDetail extends PolymerElement {
 
   _isSelected(option, value) {
     return option == value;
+  }
+
+  _hasVariations(item) {
+    return item && (item.variations || []).length;
   }
 
 }

@@ -67,6 +67,10 @@ class ShopCartItem extends PolymerElement {
         margin-left: 10px;
       }
 
+      .size[hide] {
+        visibility: hidden;
+      }
+
       .price {
         min-width: 70px;
         width: 100px;
@@ -184,8 +188,8 @@ class ShopCartItem extends PolymerElement {
             <shop-md-decorator aria-hidden="true"></shop-md-decorator>
           </shop-select>
         </div>
-        <div class="size">Size: <span>[[entry.variant.title]]</span></div>
-        <div class="price">[[_formatPrice(entry.variant.price)]]</div>
+        <div class="size" hide$="[[!hasVariant]]">Size: <span>[[variantName]]</span></div>
+        <div class="price">[[_formatPrice(price)]]</div>
 
         <!--
           Use on-click instead of on-tap to prevent the next cart item to be focused
@@ -200,7 +204,22 @@ class ShopCartItem extends PolymerElement {
 
   static get properties() { return {
 
-    entry: Object
+    entry: Object,
+
+    price: {
+      type: Number,
+      computed: '_getPrice(entry)',
+    },
+
+    variantName: {
+      type: String,
+      computed: '_getVariantName(entry)',
+    },
+
+    hasVariant: {
+      type: Boolean,
+      computed: '_hasVariant(entry)',
+    },
 
   }}
 
@@ -223,6 +242,18 @@ class ShopCartItem extends PolymerElement {
 
   _removeItem() {
     this._setCartItem(0);
+  }
+
+  _getPrice(entry) {
+    return entry.variant ? entry.variant.price : entry.item.price;
+  }
+
+  _getVariantName(entry) {
+    return entry.variant ? entry.variant.title : '';
+  }
+
+  _hasVariant(entry) {
+    return !!entry.variant;
   }
 
 }

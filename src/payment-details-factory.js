@@ -4,9 +4,13 @@ function getTotalPrice(items) {
 
 export function getCartSummary(cart) {
   return cart.map(i => ({
-    label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-    price: (i.variant.price * i.quantity),
+    label: `${i.item.title}${i.variant ? ` - ${i.variant.title}` : ''} x ${i.quantity}`,
+    price: ((i.variant ? i.variant.price : i.item.price) * i.quantity),
   }));
+}
+
+export function getCartPrice(cart) {
+  return getTotalPrice(getCartSummary(cart));
 }
 
 export function createGooglePayPaymentDetails(cart) {

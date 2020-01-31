@@ -12,7 +12,7 @@ import './shop-checkbox.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import config from './shop-configuration.js';
-import { createGooglePayPaymentDetails, createPaymentRequestApiPaymentDetails } from './payment-details-factory.js';
+import { createGooglePayPaymentDetails, createPaymentRequestApiPaymentDetails, getCartSummary } from './payment-details-factory.js';
 
 class ShopCheckout extends PolymerElement {
   static get template() {
@@ -401,11 +401,11 @@ class ShopCheckout extends PolymerElement {
                     </shop-input>
                   </div>
                   <h2>Order Summary</h2>
-                  <dom-repeat items="[[cart]]" as="entry">
+                  <dom-repeat items="[[cartSummary]]" as="entry">
                     <template>
                       <div class="row order-summary-row">
-                        <div class="flex">[[entry.item.title]] - [[entry.variant.title]] x [[entry.quantity]]</div>
-                        <div>[[_getEntryTotal(entry)]]</div>
+                        <div class="flex">[[entry.label]]</div>
+                        <div>[[_formatPrice(entry.price)]]</div>
                       </div>
                     </template>
                   </dom-repeat>
@@ -478,6 +478,11 @@ class ShopCheckout extends PolymerElement {
      * An array containing the items in the cart.
      */
     cart: Array,
+
+    cartSummary: {
+      type: Array,
+      computed: '_getCartSummary(cart)'
+    },
 
     config: {
       type: Object,
@@ -699,10 +704,6 @@ class ShopCheckout extends PolymerElement {
     return isNaN(total) ? '' : '$' + total.toFixed(2);
   }
 
-  _getEntryTotal(entry) {
-    return this._formatPrice(entry.quantity * entry.variant.price);
-  }
-
   _visibleChanged(visible) {
     if (!visible) {
       return;
@@ -728,6 +729,10 @@ class ShopCheckout extends PolymerElement {
       type: 'cart',
       method: 'payment-request',
     });
+  }
+
+  _getCartSummary(cart) {
+    return getCartSummary(cart);
   }
 
   _refreshDetails() {

@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
+import { getCartPrice } from './payment-details-factory';
 
 class ShopCartData extends PolymerElement {
   static get template() {
@@ -58,16 +59,6 @@ class ShopCartData extends PolymerElement {
     }
   }
 
-  getCartSummary() {
-    if (this.cart) {
-      return this.cart.map(i => ({
-        label: `${i.item.title} - ${i.variant.title} x ${i.quantity}`,
-        price: (i.variant.price * i.quantity),
-      }));
-    }
-    return [];
-  }
-
   clearCart() {
     this.cart = [];
   }
@@ -84,9 +75,7 @@ class ShopCartData extends PolymerElement {
 
   _computeTotal() {
     if (this.cart) {
-      return this.cart.reduce((total, entry) => {
-        return total + entry.quantity * entry.variant.price;
-      }, 0);
+      return getCartPrice(this.cart);
     }
 
     return 0;
